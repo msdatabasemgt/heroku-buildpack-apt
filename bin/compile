@@ -54,7 +54,7 @@ case "$APT_VERSION" in
 esac
 
 # add micro key
-curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+#url https://packages.microsoft.com/keys/microsoft.asc | apt-key add - # doesnt work bc needs root
 
 if [ -f $APT_CACHE_DIR/Aptfile ] && cmp -s $BUILD_DIR/Aptfile $APT_CACHE_DIR/Aptfile && [[ $CACHED_STACK == $STACK ]] ; then
   # Old Aptfile is the same as new and STACK has not changed
