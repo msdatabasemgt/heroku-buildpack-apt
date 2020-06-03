@@ -29,6 +29,39 @@ function indent() {
   esac
 }
 
+#ftp://ftp.freetds.org/pub/freetds/stable/freetds-1.1.tar.gz
+# # # # # # # # # # # # #
+# BEGIN CUSTOM ADDITIONS
+# # # # # # # # # # # # #
+
+VENDOR_DIR="/app/.heroku/vendor"
+
+export VENDOR_DIR
+
+mkdir -p $VENDOR_DIR
+
+# Before we get into pip, lets get FreeTDS
+echo "-----> Installing FreeTDS"
+S3BUCKET="ftp://ftp.freetds.org/pub/freetds/stable/"
+FREETDS_URL="$S3BUCKET/freetds-1.1.tar.gz"
+FREETDS_DIR="$VENDOR_DIR/freetds"
+
+mkdir -p $FREETDS_DIR
+curl $FREETDS_URL -s -o - | tar -xz -C $FREETDS_DIR -f -
+
+LD_LIBRARY_PATH="$VENDOR_DIR/freetds/lib:$LIBRARY_PATH"
+LIBRARY_PATH="$VENDOR_DIR/freetds/lib:$LIBRARY_PATH"
+PLUGIN_PATH="$VENDOR_DIR/freetds/bin:$PLUGIN_PATH"
+CPPATH="$VENDOR_DIR/freetds/include:$CPPATH"
+CPATH="$VENDOR_DIR/freetds/include:$CPATH"
+
+export FREETDS_DIR LD_LIBRARY_PATH LIBRARY_PATH CPPATH CPATH PLUGIN_PATH
+
+# # # # # # # # # # # #
+# END CUSTOM ADDITIONS
+# # # # # # # # # # # #
+
+
 # Store which STACK we are running on in the cache to bust the cache if it changes
 if [ -f $CACHE_DIR/.apt/STACK ]; then
   CACHED_STACK=$(cat "$CACHE_DIR/.apt/STACK")
