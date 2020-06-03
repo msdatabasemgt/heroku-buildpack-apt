@@ -54,7 +54,7 @@ case "$APT_VERSION" in
 esac
 
 # add micro key
-curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
 
 if [ -f $APT_CACHE_DIR/Aptfile ] && cmp -s $BUILD_DIR/Aptfile $APT_CACHE_DIR/Aptfile && [[ $CACHED_STACK == $STACK ]] ; then
   # Old Aptfile is the same as new and STACK has not changed
@@ -95,7 +95,7 @@ for PACKAGE in $(cat $BUILD_DIR/Aptfile | grep -v -s -e '^#' | grep -v -s -e "^:
 done
 
 # install msodbc
-ACCEPT_EULA=Y apt-get install -y $APT_OPTIONS -y msodbcsql17  #https://packages.microsoft.com/ubuntu/18.04/prod/pool/main/m/msodbcsql17/msodbcsql17_17.5.2.1-1_amd64.deb
+#ACCEPT_EULA=Y apt-get install -y $APT_OPTIONS -y msodbcsql17  #https://packages.microsoft.com/ubuntu/18.04/prod/pool/main/m/msodbcsql17/msodbcsql17_17.5.2.1-1_amd64.deb
 
 mkdir -p $BUILD_DIR/.apt
 
