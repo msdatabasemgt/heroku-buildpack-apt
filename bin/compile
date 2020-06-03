@@ -92,7 +92,7 @@ for PACKAGE in $(cat $BUILD_DIR/Aptfile | grep -v -s -e '^#' | grep -v -s -e "^:
 done
 
 # install msodbc
-ACCEPT_EULA=Y apt-get install -y msodbcsql17
+ACCEPT_EULA=Y apt-get $APT_OPTIONS -y $APT_FORCE_YES -d install -y msodbcsql17
 
 mkdir -p $BUILD_DIR/.apt
 
