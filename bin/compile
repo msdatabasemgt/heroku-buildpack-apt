@@ -46,9 +46,6 @@ APT_SOURCELIST_DIR="$CACHE_DIR/apt/sources"   # place custom sources.list here
 
 APT_SOURCES="$APT_SOURCELIST_DIR/sources.list"
 
-# add microsoft to sources
-curl https://packages.microsoft.com/config/ubuntu/18.04/prod.list > /etc/apt/sources.list.d/mssql-release.list
-
 APT_VERSION=$(apt-get -v | awk 'NR == 1{ print $2 }')
 
 case "$APT_VERSION" in
@@ -100,9 +97,6 @@ for DEB in $(ls -1 $APT_CACHE_DIR/archives/*.deb); do
   topic "Installing $(basename $DEB)"
   dpkg -x $DEB $BUILD_DIR/.apt/
 done
-
-# installing mssql server driver
-ACCEPT_EULA=Y apt-get install msodbcsql17 mssql-tools
 
 topic "Writing profile script"
 mkdir -p $BUILD_DIR/.profile.d
