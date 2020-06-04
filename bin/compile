@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # bin/compile <build-dir> <cache-dir>
 # install q tunnel
-curl https://s3.amazonaws.com/quotaguard/qgtunnel-latest.tar.gz | tar xz
+curl https://s3.amazonaws.com/quotaguard/qgtunnel-latest.tar.gz | tar -C /app xz
 # fail fast
 set -e
 
