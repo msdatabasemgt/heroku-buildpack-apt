@@ -29,38 +29,6 @@ function indent() {
   esac
 }
 
-#ftp://ftp.freetds.org/pub/freetds/stable/freetds-1.1.tar.gz
-# # # # # # # # # # # # #
-# BEGIN CUSTOM ADDITIONS
-# # # # # # # # # # # # #
-
-VENDOR_DIR="/app/.heroku/vendor"
-
-export VENDOR_DIR
-
-mkdir -p $VENDOR_DIR
-
-# Before we get into pip, lets get FreeTDS
-echo "-----> Installing FreeTDS"
-S3BUCKET="ftp://ftp.freetds.org/pub/freetds/stable/"
-FREETDS_URL="$S3BUCKET/freetds-1.1.tar.gz"
-FREETDS_DIR="$VENDOR_DIR/freetds"
-
-mkdir -p $FREETDS_DIR
-curl $FREETDS_URL -s -o - | tar -xz -C $FREETDS_DIR -f -
-
-LD_LIBRARY_PATH="$VENDOR_DIR/freetds/lib:$LIBRARY_PATH"
-LIBRARY_PATH="$VENDOR_DIR/freetds/lib:$LIBRARY_PATH"
-PLUGIN_PATH="$VENDOR_DIR/freetds/bin:$PLUGIN_PATH"
-CPPATH="$VENDOR_DIR/freetds/include:$CPPATH"
-CPATH="$VENDOR_DIR/freetds/include:$CPATH"
-
-export FREETDS_DIR LD_LIBRARY_PATH LIBRARY_PATH CPPATH CPATH PLUGIN_PATH
-
-# # # # # # # # # # # #
-# END CUSTOM ADDITIONS
-# # # # # # # # # # # #
-
 
 # Store which STACK we are running on in the cache to bust the cache if it changes
 if [ -f $CACHE_DIR/.apt/STACK ]; then
@@ -85,9 +53,6 @@ case "$APT_VERSION" in
   0* | 1.0*) APT_FORCE_YES="--force-yes";;
   *)         APT_FORCE_YES="--allow-downgrades --allow-remove-essential --allow-change-held-packages";;
 esac
-
-# add micro key
-#url https://packages.microsoft.com/keys/microsoft.asc | apt-key add - # doesnt work bc needs root
 
 if [ -f $APT_CACHE_DIR/Aptfile ] && cmp -s $BUILD_DIR/Aptfile $APT_CACHE_DIR/Aptfile && [[ $CACHED_STACK == $STACK ]] ; then
   # Old Aptfile is the same as new and STACK has not changed
@@ -127,15 +92,13 @@ for PACKAGE in $(cat $BUILD_DIR/Aptfile | grep -v -s -e '^#' | grep -v -s -e "^:
   fi
 done
 
-# install msodbc
-#ACCEPT_EULA=Y apt-get install -y $APT_OPTIONS -y msodbcsql17  #https://packages.microsoft.com/ubuntu/18.04/prod/pool/main/m/msodbcsql17/msodbcsql17_17.5.2.1-1_amd64.deb
-
 mkdir -p $BUILD_DIR/.apt
 
 for DEB in $(ls -1 $APT_CACHE_DIR/archives/*.deb); do
   topic "Installing $(basename $DEB)"
   dpkg -x $DEB $BUILD_DIR/.apt/
 done
+
 
 topic "Writing profile script"
 mkdir -p $BUILD_DIR/.profile.d
@@ -157,8 +120,12 @@ export CPATH="$INCLUDE_PATH"
 export CPPPATH="$INCLUDE_PATH"
 export PKG_CONFIG_PATH="$BUILD_DIR/.apt/usr/lib/x86_64-linux-gnu/pkgconfig:$BUILD_DIR/.apt/usr/lib/i386-linux-gnu/pkgconfig:$BUILD_DIR/.apt/usr/lib/pkgconfig:$PKG_CONFIG_PATH"
 
+
 #give environment to later buildpacks
 export | grep -E -e ' (PATH|LD_LIBRARY_PATH|LIBRARY_PATH|INCLUDE_PATH|CPATH|CPPPATH|PKG_CONFIG_PATH)='  > "$LP_DIR/export"
 
 topic "Rewrite package-config files"
 find $BUILD_DIR/.apt -type f -ipath '*/pkgconfig/*.pc' | xargs --no-run-if-empty -n 1 sed -i -e 's!^prefix=\(.*\)$!prefix='"$BUILD_DIR"'/.apt\1!g'
+
+topic "Setting correct ODBC environment variable"
+export ODBCSYSINI="$BUILD_DIR/.apt/opt/microsoft/msodbcsql17/etc"
